@@ -1,0 +1,13 @@
+{
+  "base_url": "https://api.hkma.gov.hk/public/market-data-and-statistics",
+  "page_size": 100,
+  "request_timeout_seconds": 30,
+  "max_retries": 3,
+  "retry_backoff_seconds": 2,
+  "user_agent": "hkma-financial-monitor/1.0 (portfolio project; contact: your-email@example.com)",
+  "paths": {
+    "raw_dir": "data/raw",
+    "database": "data/processed/hkma.db"
+  },
+  "datasets": ["fx_daily", "interbank_daily", "monetary_monthly"]
+}

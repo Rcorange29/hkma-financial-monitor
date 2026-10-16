@@ -1,0 +1,10 @@
+# Core ETL pipeline, data-quality checks, and the offline HTML report
+# use ONLY the Python standard library (tested on Python 3.9 - 3.14).
+# You do NOT need to install anything to run:
+#   python scripts/run_pipeline.py --offline
+#   python scripts/run_quality.py
+#   python scripts/build_html_report.py
+#
+# The optional interactive Streamlit dashboard needs these two packages:
+streamlit>=1.30
+pandas>=2.0

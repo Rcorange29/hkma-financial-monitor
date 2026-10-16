@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Local config (copy from config.example.json). No secrets are used by this
+# project, but local config is still kept out of version control by convention.
+config.json
+
+# Generated artifacts (rebuild them with the scripts)
+data/processed/*.db
+data/processed/*.json
+docs/report.html
+
+# OS
+.DS_Store
