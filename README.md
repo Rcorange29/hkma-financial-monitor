@@ -1,5 +1,8 @@
 # HKMA Financial Data Automation & Monitoring
 
+![CI](https://github.com/<your-username>/hkma-financial-monitor/actions/workflows/ci.yml/badge.svg)
+<!-- After pushing, replace <your-username> with your GitHub username. -->
+
 A reproducible, end-to-end data pipeline that pulls **official Hong Kong
 Monetary Authority (HKMA) open data** on exchange rates, interest rates,
 interbank liquidity and monetary statistics, cleans and stores it in SQLite,
@@ -119,6 +122,10 @@ python3 -m unittest discover -s tests -v
 
 Copy `config.example.json` to `config.json` and edit as needed. The pipeline
 falls back to the example file if `config.json` does not exist.
+
+If you use `make`, the common steps are wrapped as targets: `make setup`,
+`make offline`, `make live`, `make quality`, `make report`, `make dashboard`,
+`make test` (see `Makefile` and `CONTRIBUTING.md`).
 
 ```json
 {
