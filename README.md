@@ -1,7 +1,6 @@
 # HKMA Financial Data Automation & Monitoring
 
-![CI](https://github.com/<your-username>/hkma-financial-monitor/actions/workflows/ci.yml/badge.svg)
-<!-- After pushing, replace <your-username> with your GitHub username. -->
+![CI](https://github.com/Rcorange29/hkma-financial-monitor/actions/workflows/ci.yml/badge.svg)
 
 A reproducible, end-to-end data pipeline that pulls **official Hong Kong
 Monetary Authority (HKMA) open data** on exchange rates, interest rates,
