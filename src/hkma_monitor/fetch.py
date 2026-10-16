@@ -144,13 +144,27 @@ def fetch_dataset(cfg: dict, dataset_key: str, *, offline: bool = False) -> list
     all_records: list[dict] = []
     page_size = cfg["page_size"]
     offset = 0
+    # A live run writes a fresh, consistent set of pages.  Remove any stale
+    # cached pages for this dataset first (they may have been created with a
+    # different page size or offset step) so an offline replay never reads
+    # overlapping/duplicate pages.  The cache is regenerable, so this is safe.
+    for old in glob.glob(str(raw / f"{dataset_key}__offset-*.json")):
+        Path(old).unlink()
+    max_pages = cfg.get("max_pages", 100)  # hard safety stop for paging
+    page_no = 0
     while True:
+        if page_no >= max_pages:
+            raise FetchError(
+                f"[{dataset_key}] reached max_pages={max_pages}; "
+                "raise 'max_pages' in config if the feed truly has more rows"
+            )
         url = _build_url(cfg, dataset_key, offset)
         log.info("[%s] GET offset=%d", dataset_key, offset)
         page = _http_get_json(url, cfg)
         records = _validate_envelope(page, url)
         _write_cache(raw, dataset_key, offset, page)
         all_records.extend(records)
+        page_no += 1
         if len(records) < page_size:
             break  # last page
         offset += page_size

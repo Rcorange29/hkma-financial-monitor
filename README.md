@@ -81,6 +81,19 @@ python3 scripts/run_quality.py
 python3 scripts/build_html_report.py
 ```
 
+A live run pages through the **entire** available history (`page_size=500`
+in `config.json`): the two daily feeds reach back to 2002-01-02 (about
+6,300 business-day rows per feed), so the first live run may take a few minutes.
+Before writing, it deletes any stale cached pages for that dataset so the cache
+is always a consistent, non-overlapping page set; `max_pages` is a safety stop.
+
+> Note on the monetary feed. `monetary-statistics` returns a fixed 20-row
+> summary: recent monthly rows plus annual year-end rows (`offset >= 20`
+> returns an empty result). Longer *monthly* money-supply histories are
+> published by HKMA as separate, paginated tables under the bulletin's
+> **Money** category (e.g. "2.2.2 Money supply – Unadjusted for foreign
+> currency swap deposits"); see `docs/DATA_CATALOG.md` for how to add one.
+
 Re-run `run_pipeline.py` as often as you like; the primary key prevents
 duplicates (the second run reports `inserted=0`).
 
@@ -110,7 +123,8 @@ falls back to the example file if `config.json` does not exist.
 ```json
 {
   "base_url": "https://api.hkma.gov.hk/public/market-data-and-statistics",
-  "page_size": 100,
+  "page_size": 500,
+  "max_pages": 100,
   "request_timeout_seconds": 30,
   "max_retries": 3,
   "retry_backoff_seconds": 2,

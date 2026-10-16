@@ -95,6 +95,29 @@ columns are `null` because they have not yet been published. The loader keeps
 these as missing cells and the quality layer accounts for them; they are
 expected to be back-filled by HKMA.
 
+**Pagination cap (verified).** This summary endpoint returns exactly 20 rows:
+requesting `offset=20` returns `err_code 1001 / "No result found"`. It is a
+*summary* feed (recent months + annual year-end), not a full monthly archive.
+The long, fully paginated monthly money-supply series are published by HKMA as
+separate tables in the bulletin's **Money** category
+(<https://apidocs.hkma.gov.hk/documentation/market-data-and-statistics/monthly-statistical-bulletin/money/>),
+for example:
+
+- 2.2.1 Money supply – Adjusted for foreign currency swap deposits
+- 2.2.2 Money supply – Unadjusted for foreign currency swap deposits
+
+The same figures are also downloadable as Excel tables (T020201/T020202) from
+the bulletin table page. To integrate one, open its doc page, copy the API URL,
+and add an entry to `DATASETS` in `src/hkma_monitor/datasets.py` with the
+correct `date_field`, `fields` and `metrics`; the loader, storage and quality
+checks require no other changes. (These detailed Money endpoints were not
+wired in here because their exact API slug could not be verified from the
+offline build environment — only a verified endpoint should be added.)
+
+By contrast, the two **daily** feeds have no such cap: they page back to
+2002-01-02 (about 6,300 rows per feed), and a live run downloads the full
+history automatically.
+
 ## Data-quality thresholds and their rationale
 
 Findings are **flags for review, never automatic deletions**. Deleting a real
