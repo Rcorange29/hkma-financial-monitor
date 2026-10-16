@@ -116,3 +116,45 @@ DATASETS = {
         },
     },
 }
+
+# ---------------------------------------------------------------------------
+# Optional extension: full, paginated monthly money-supply history.
+#
+# The enabled ``monetary_monthly`` feed above is a *summary* (recent months +
+# annual year-end, capped at 20 rows).  HKMA publishes longer monthly money-
+# supply series as separate tables under the bulletin's "Money" category:
+#   https://apidocs.hkma.gov.hk/documentation/market-data-and-statistics/
+#       monthly-statistical-bulletin/money/
+#   2.2.2  Money supply - Unadjusted for foreign currency swap deposits
+#
+# To enable it (on an internet-connected machine):
+#   1. Open that doc page and copy the exact "API URL" into ``endpoint``.
+#   2. Confirm the date column and field names from the page's Swagger block,
+#      and adjust ``date_field`` / ``fields`` / ``metrics`` to match.
+#   3. Add "money_supply_monthly" to the ``datasets`` list in config.json.
+# The registry entry below is intentionally NOT enabled and its endpoint is a
+# placeholder, so a live run fails loudly rather than hitting a wrong URL.
+# ---------------------------------------------------------------------------
+DATASETS["money_supply_monthly"] = {
+    "endpoint": "<REPLACE_WITH_API_URL_FROM_MONEY_DOC_2.2.2>",
+    "source_url": "https://apidocs.hkma.gov.hk/documentation/market-data-and-statistics/monthly-statistical-bulletin/money/",
+    "title": "Money supply - Unadjusted for foreign currency swap deposits (2.2.2)",
+    "date_field": "end_of_month",          # confirm against the doc's Swagger
+    "freq": "monthly",
+    "date_format": "%Y-%m",
+    "fields": [
+        "end_of_month",                    # confirm exact field names
+        "m1_total", "m1_hkd",
+        "m2_total", "m2_hkd",
+        "m3_total", "m3_hkd",
+    ],
+    "metrics": {
+        "m1_total": ("Money supply M1 total", "HK$ million", "monetary_stock", 0.0, 8000000.0),
+        "m1_hkd": ("Money supply M1 HKD", "HK$ million", "monetary_stock", 0.0, 4000000.0),
+        "m2_total": ("Money supply M2 total", "HK$ million", "monetary_stock", 0.0, 30000000.0),
+        "m2_hkd": ("Money supply M2 HKD", "HK$ million", "monetary_stock", 0.0, 15000000.0),
+        "m3_total": ("Money supply M3 total", "HK$ million", "monetary_stock", 0.0, 30000000.0),
+        "m3_hkd": ("Money supply M3 HKD", "HK$ million", "monetary_stock", 0.0, 15000000.0),
+    },
+    "enabled": False,  # not listed in config["datasets"] until endpoint verified
+}
