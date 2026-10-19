@@ -36,7 +36,11 @@ def main() -> int:
                         datefmt="%H:%M:%S")
 
     cfg = load_config(args.config)
-    conn = q.open_db(cfg)
+    try:
+        conn = q.open_db(cfg)
+    except (FileNotFoundError, RuntimeError) as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
     try:
         report = q.run_report(conn)
     finally:

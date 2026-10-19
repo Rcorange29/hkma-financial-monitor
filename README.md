@@ -89,6 +89,10 @@ in `config.json`): the two daily feeds reach back to 2002-01-02 (about
 Before writing, it deletes any stale cached pages for that dataset so the cache
 is always a consistent, non-overlapping page set; `max_pages` is a safety stop.
 
+`run_quality.py` and `build_html_report.py` both read the SQLite database, so
+run the pipeline first. If the database has not been built they exit with a
+clear message instead of a raw `sqlite3` traceback.
+
 > Note on the monetary feed. `monetary-statistics` returns a fixed 20-row
 > summary: recent monthly rows plus annual year-end rows (`offset >= 20`
 > returns an empty result). Longer *monthly* money-supply histories are

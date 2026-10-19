@@ -237,7 +237,30 @@ def save_report(report: dict, cfg: dict) -> Path:
 
 
 def open_db(cfg):
+    """Open the SQLite database for the quality checks.
+
+    Quality checks are meaningless on an empty database, so this fails with an
+    actionable message when the pipeline has not been run yet.  Without this
+    guard, ``sqlite3.connect`` silently creates a zero-byte file (or raises a
+    bare ``unable to open database file`` when the directory is missing) and
+    the caller then crashes on ``no such table: observations``.
+    """
     import sqlite3
-    conn = sqlite3.connect(db_path(cfg))
+    path = db_path(cfg)
+    if not path.exists():
+        raise FileNotFoundError(
+            f"No database at {path}. Build it first with "
+            "'python scripts/run_pipeline.py' (add --offline to replay the "
+            "bundled cache in data/raw)."
+        )
+    conn = sqlite3.connect(path)
     conn.row_factory = sqlite3.Row
+    try:
+        conn.execute("SELECT 1 FROM observations LIMIT 1")
+    except sqlite3.OperationalError as exc:
+        conn.close()
+        raise RuntimeError(
+            f"Database at {path} has no 'observations' table, so it was not "
+            "created by the pipeline. Re-run 'python scripts/run_pipeline.py'."
+        ) from exc
     return conn
