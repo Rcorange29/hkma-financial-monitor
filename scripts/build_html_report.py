@@ -24,7 +24,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from hkma_monitor.config import load_config  # noqa: E402
+from hkma_monitor.config import load_config, db_path  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -135,9 +135,23 @@ def stats_row(conn, dataset: str, metric: str, freq: str) -> dict:
 
 def main() -> None:
     cfg = load_config(None)
-    db = ROOT / cfg["paths"]["database"]
+    db = db_path(cfg)
+    if not db.exists():
+        raise SystemExit(
+            f"No database at {db}. Build it first with "
+            "'python scripts/run_pipeline.py' (add --offline to replay the "
+            "bundled cache in data/raw)."
+        )
     conn = sqlite3.connect(str(db))
     conn.row_factory = sqlite3.Row
+    try:
+        conn.execute("SELECT 1 FROM observations LIMIT 1")
+    except sqlite3.OperationalError as exc:
+        conn.close()
+        raise SystemExit(
+            f"Database at {db} has no 'observations' table. "
+            "Re-run 'python scripts/run_pipeline.py'."
+        ) from exc
 
     usd, usd_lab, usd_unit = fetch(conn, "usd", "fx_daily", "daily")
     cstrong, _, _ = fetch(conn, "cu_strongside", "interbank_daily", "daily")

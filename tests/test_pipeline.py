@@ -134,6 +134,48 @@ class TestDatabaseIdempotency(unittest.TestCase):
         self.assertEqual(violations[0]["metric"], "usd")
 
 
+class TestQualityOpenDb(unittest.TestCase):
+    """Regression: quality checks must fail clearly before the pipeline has run.
+
+    Previously ``open_db`` passed a non-existent path to ``sqlite3.connect``,
+    which either raised "unable to open database file" (missing directory) or
+    silently created a zero-byte database that later crashed on
+    "no such table: observations".
+    """
+
+    def test_missing_database_raises_actionable_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            db = Path(tmp) / "nested" / "hkma.db"
+            cfg = {"paths": {"database": str(db)}}
+            with self.assertRaises(FileNotFoundError) as ctx:
+                qmod.open_db(cfg)
+            self.assertIn("run_pipeline.py", str(ctx.exception))
+            self.assertFalse(db.exists(), "open_db must not create an empty database")
+
+    def test_empty_database_file_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            db = Path(tmp) / "hkma.db"
+            db.write_bytes(b"")  # zero-byte file left behind by sqlite3.connect
+            cfg = {"paths": {"database": str(db)}}
+            with self.assertRaises(RuntimeError) as ctx:
+                qmod.open_db(cfg)
+            self.assertIn("observations", str(ctx.exception))
+
+    def test_open_db_works_after_pipeline_created_schema(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = {"paths": {"database": str(Path(tmp) / "hkma.db")}}
+            conn = dbmod.connect(cfg)
+            dbmod.refresh_meta(conn)
+            conn.close()
+
+            conn = qmod.open_db(cfg)
+            try:
+                self.assertEqual(qmod.check_duplicates(conn), [])
+                self.assertEqual(qmod.check_hard_bounds(conn), [])
+            finally:
+                conn.close()
+
+
 class TestExpectedGrids(unittest.TestCase):
     def test_daily_grid_is_weekdays_only(self):
         import datetime as dt
